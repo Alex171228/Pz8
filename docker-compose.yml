@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: .
+    container_name: pz8-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://root:secret@mongo:27017/?authSource=admin}
+      MONGO_DB: ${MONGO_DB:-pz8}
+      HTTP_ADDR: ${HTTP_ADDR:-:8081}
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+
+volumes:
+  mongo_data:
